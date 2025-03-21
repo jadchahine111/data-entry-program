@@ -1,69 +1,49 @@
-# Welcome to your Lovable project
+# 🩺 Hospital Data Entry System
 
-## Project info
+*A modern hospital data entry system built with React.js, TailwindCSS, and a UI library for efficient record management.*  
 
-**URL**: https://lovable.dev/projects/6eec1d02-bc6c-4ab1-9b65-93afbc2dc14e
+![Hospital Data Entry System Preview](https://via.placeholder.com/1200x600?text=Project+Screenshot)  
+*(Replace with an actual screenshot of your UI)*  
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 🚀 Features
+✅ **Customizable Data Templates** – Create and manage custom form templates for patient records.  
+✅ **Record Management** – Add, edit, delete, and search hospital records.  
+✅ **User Authentication** – Secure login for doctors, nurses, and admins.  
+✅ **Fast & Responsive UI** – Built with **React.js** and **TailwindCSS** for a seamless experience.  
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6eec1d02-bc6c-4ab1-9b65-93afbc2dc14e) and start prompting.
+## 🖥️ Tech Stack
+| **Technology** | **Usage** |
+|---------------|----------|
+| **React.js** | Frontend framework |
+| **Laravel** | Backend API | https://github.com/HadiHz88/records_api
+| **TailwindCSS** | Styling |
+| **shadcn/ui** | UI components (Choose one) |
+| **React Query / SWR** | Data fetching & caching |
+| **MySQL** | Database |
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 📸 Screenshots
+*(Add actual screenshots of your project here)*  
+- **Dashboard View**  
+- **Template Form Builder**  
+- **Record Management Panel**  
+- **Dark Mode Example**  
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Follow these steps:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
-npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
 
-**Edit a file directly in GitHub**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
 
-**Use GitHub Codespaces**
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-## What technologies are used for this project?
 
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/6eec1d02-bc6c-4ab1-9b65-93afbc2dc14e) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
