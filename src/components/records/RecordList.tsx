@@ -168,9 +168,6 @@ const RecordList: React.FC<RecordListProps> = ({
             <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
             <CardTitle className="text-xl mb-2">No templates available</CardTitle>
             <p className="text-muted-foreground mb-6">Create a template before adding records</p>
-            <Button asChild className="bg-hospital-600 hover:bg-hospital-700">
-              <Link href="/templates">Create Template</Link>
-            </Button>
           </CardContent>
         </Card>
       ) : filteredRecords.length > 0 ? (
