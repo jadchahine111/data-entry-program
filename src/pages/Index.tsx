@@ -8,27 +8,80 @@ import { FileText, ListChecks, ArrowRight, TrendingUp, Users, Hospital, Badge } 
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { Template } from '@/components/templates/TemplateCard';
 import { Record } from '@/components/records/RecordForm';
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
 
-const Index = () => {
-  const [templates] = useLocalStorage<Template[]>('templates', []);
-  const [records] = useLocalStorage<Record[]>('records', []);
+
+
+// Type of API response
+interface DashboardStats {
+  templatesCount: number
+  recordsCount: number
+}
+
+// Function to fetch dashboard stats
+const fetchDashboardStats = async (): Promise<DashboardStats> => {
+  const { data } = await axios.get("http://localhost:8000/api")
+  return data
+}
+
+function Index() {
+  // Use React Query to fetch the data
+  const { data, isLoading, error } = useQuery<DashboardStats>({
+    queryKey: ["dashboardStats"],
+    queryFn: fetchDashboardStats,
+    // Optional: set default data while loading
+    placeholderData: { templatesCount: 0, recordsCount: 0 },
+  })
 
   const stats = [
     {
       title: "Templates",
-      value: templates.length,
+      value: data?.templatesCount || 0,
       description: "Custom form templates",
       icon: <FileText className="h-5 w-5 text-hospital-600" />,
       link: "/templates",
     },
     {
       title: "Records",
-      value: records.length,
+      value: data?.recordsCount || 0,
       description: "Patient data entries",
       icon: <ListChecks className="h-5 w-5 text-hospital-600" />,
       link: "/records",
     },
+    
   ];
+
+    // Handle loading state
+    if (isLoading) {
+      return (
+        <Container>
+          <div className="space-y-10 animate-pulse">
+            <div className="space-y-4">
+              <div className="h-8 w-64 bg-gray-200 rounded"></div>
+              <div className="h-4 w-96 bg-gray-200 rounded"></div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {[1, 2].map((item) => (
+                <div key={item} className="h-32 bg-gray-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+        </Container>
+      )
+    }
+  
+    // Handle error state
+    if (error) {
+      return (
+        <Container>
+          <div className="p-4 border border-red-300 bg-red-50 rounded-md">
+            <h2 className="text-lg font-medium text-red-800">Error loading dashboard data</h2>
+            <p className="text-red-600">Please try refreshing the page.</p>
+          </div>
+        </Container>
+      )
+    }
 
   return (
     <Container>

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import type { Field, Template } from "./TemplateCard"
 import { Badge } from "@/components/ui/badge"
-import { Plus, X, Check, AlertCircle, Grip } from "lucide-react"
+import { Plus, X, Check, AlertCircle, Grip, Loader2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { v4 as uuidv4 } from "uuid"
@@ -56,9 +56,10 @@ interface TemplateFormProps {
   initialData?: Template
   onSubmit: (data: Template) => void
   onCancel: () => void
+  isSubmitting?: boolean
 }
 
-const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCancel }) => {
+const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCancel, isSubmitting = false }) => {
   const [fields, setFields] = useState<Field[]>(initialData?.fields || [])
 
   const [currentField, setCurrentField] = useState<Field>({
@@ -394,16 +395,25 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
           </CardContent>
 
           <CardFooter className="justify-between border-t pt-4 pb-4">
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button
               type="submit"
               className="gap-1 bg-hospital-600 hover:bg-hospital-700"
-              disabled={fields.length === 0}
+              disabled={isSubmitting || fields.length === 0}
             >
-              <Check className="h-4 w-4" />
-              {isEditMode ? "Update Template" : "Save Template"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  {isEditMode ? "Updating..." : "Creating..."}
+                </>
+              ) : (
+                <>
+                  <Check className="h-4 w-4" />
+                  {isEditMode ? "Update Template" : "Save Template"}
+                </>
+              )}
             </Button>
           </CardFooter>
         </form>
