@@ -138,50 +138,6 @@ const Index = () => {
           </Card>
         </div>
 
-        <div className="bg-hospital-50 -mx-8 px-8 py-10 border-y">
-          <div className="max-w-4xl mx-auto space-y-6">
-            <div className="text-center space-y-2">
-              <Badge className="bg-white font-normal px-3 py-1 text-xs">
-                Streamlined Medical Forms
-              </Badge>
-              <h2 className="text-2xl font-bold">Simplify Your Hospital Data Management</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                MediForm helps medical professionals create customized data collection forms
-                while maintaining consistent records across departments.
-              </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-3 mt-8">
-              {[
-                {
-                  icon: <Hospital className="h-8 w-8 text-hospital-600" />,
-                  title: "Departmental Flexibility",
-                  description: "Create specialized forms for different hospital departments and needs."
-                },
-                {
-                  icon: <TrendingUp className="h-8 w-8 text-hospital-600" />,
-                  title: "Consistent Data",
-                  description: "Maintain data consistency with standardized, reusable templates."
-                },
-                {
-                  icon: <Users className="h-8 w-8 text-hospital-600" />,
-                  title: "Patient-Centric",
-                  description: "Organize records by patient, procedure, or any custom criteria."
-                }
-              ].map((feature, i) => (
-                <Card key={i} className="bg-white border-none hover:shadow-glass transition-shadow duration-300">
-                  <CardContent className="pt-6">
-                    <div className="mb-4 rounded-full w-12 h-12 flex items-center justify-center bg-hospital-50">
-                      {feature.icon}
-                    </div>
-                    <h3 className="text-lg font-medium mb-2">{feature.title}</h3>
-                    <p className="text-muted-foreground text-sm">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
     </Container>
   );
