@@ -21,7 +21,7 @@ interface DashboardStats {
 
 // Function to fetch dashboard stats
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
-  const { data } = await axios.get("http://localhost:8000/api")
+  const { data } = await axios.get("http://localhost:8000/api/counts")
   return data
 }
 

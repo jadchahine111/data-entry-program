@@ -1,105 +1,137 @@
+"use client"
 
-import React, { useState } from 'react';
-import { Record } from './RecordForm';
-import { Template } from '../templates/TemplateCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Search, Plus, FileText, Pencil, Trash2, CheckCircle } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format } from 'date-fns';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import RecordForm from './RecordForm';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import type React from "react"
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import type { Template } from "@/components/templates/TemplateCard"
+import type { Record } from "./RecordForm"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { format } from "date-fns"
+import { Trash2, Search, FileText, Link, Pencil, CheckCircle } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import RecordForm from "./RecordForm"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { useNavigate } from "react-router-dom"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface RecordListProps {
-  records: Record[];
-  templates: Template[];
-  onCreateRecord: (record: Record) => void;
-  onUpdateRecord: (record: Record) => void;
-  onDeleteRecord: (recordId: string) => void;
+  records: Record[]
+  templates: Template[]
+  onUpdateRecord: (record: Record) => void
+  onDeleteRecord: (recordId: string) => void
+  isDeleting?: boolean
+}
+
+// Define the structure of a value item in the values array
+interface ValueItem {
+  id: number
+  record_id: number
+  field_id: number
+  value: string
+  created_at: string
+  updated_at: string
 }
 
 const RecordList: React.FC<RecordListProps> = ({
   records,
   templates,
-  onCreateRecord,
   onUpdateRecord,
   onDeleteRecord,
+  isDeleting = false,
 }) => {
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [editingRecord, setEditingRecord] = useState<Record | null>(null);
-  const [deleteRecordId, setDeleteRecordId] = useState<string | null>(null);
-  
-  // Filter records based on selected template and search query
-  const filteredRecords = records.filter(record => {
-    const template = templates.find(t => t.id === record.templateId);
-    
-    if (!template) return false;
-    
-    if (selectedTemplateId !== 'all' && record.templateId !== selectedTemplateId) return false;
-    
-    // Search in field values
-    if (searchQuery) {
-      const values = Object.values(record.values);
-      return values.some(value => 
-        value !== null && 
-        value !== undefined && 
-        value.toString().toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  const [searchQuery, setSearchQuery] = useState("")
+  const [editingRecord, setEditingRecord] = useState<Record | null>(null)
+  const [deleteRecordId, setDeleteRecordId] = useState<string | null>(null)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("all")
+  const navigate = useNavigate()
+
+  const getTemplateById = (templateId: string): Template | undefined => {
+    return templates.find((template) => template.id === templateId)
+  }
+
+  // Helper function to get a value from the values array by field_id
+  const getValueByFieldId = (values: any[], fieldId: string): string => {
+    if (!Array.isArray(values)) return ""
+
+    const valueItem = values.find((item) => item.field_id.toString() === fieldId)
+    return valueItem ? valueItem.value : ""
+  }
+
+  const filteredRecords = records.filter((record) => {
+    const template = getTemplateById(record.templateId)
+    if (!template) return false
+
+    const searchLower = searchQuery.toLowerCase()
+
+    // Search in template name
+    if (template.name.toLowerCase().includes(searchLower)) return true
+
+    // Search in record values
+    if (Array.isArray(record.values)) {
+      return record.values.some((item) => String(item.value).toLowerCase().includes(searchLower))
     }
-    
-    return true;
-  });
-  
-  const getTemplateById = (templateId: string) => {
-    return templates.find(template => template.id === templateId);
-  };
-  
+
+    return false
+  })
+
   const handleEditRecord = (record: Record) => {
-    setEditingRecord(record);
-  };
-  
+    // Create a copy of the record
+    const recordCopy = { ...record }
+
+    // Transform values from array to object if it's an array
+    if (Array.isArray(recordCopy.values)) {
+      const valuesObject: { [key: string]: any } = {}
+      recordCopy.values.forEach((item) => {
+        valuesObject[item.field_id.toString()] = item.value
+      })
+      recordCopy.values = valuesObject
+    }
+
+    setEditingRecord(recordCopy)
+  }
+
   const handleDeleteRecord = (recordId: string) => {
-    setDeleteRecordId(recordId);
-  };
-  
+    setDeleteRecordId(recordId)
+  }
+
   const confirmDeleteRecord = () => {
     if (deleteRecordId) {
-      onDeleteRecord(deleteRecordId);
-      toast.success("Record deleted successfully");
-      setDeleteRecordId(null);
+      onDeleteRecord(deleteRecordId)
+      setDeleteRecordId(null)
     }
-  };
-  
-  const handleSubmitRecord = (record: Record) => {
-    if (editingRecord) {
-      onUpdateRecord(record);
-      setEditingRecord(null);
-    } else {
-      onCreateRecord(record);
-    }
-  };
-  
+  }
+
+  const handleSubmitRecord = (updatedRecord: Record) => {
+    onUpdateRecord(updatedRecord)
+    setEditingRecord(null)
+  }
+
   const formatFieldValue = (value: any, fieldType: string) => {
-    if (value === null || value === undefined) return '';
-    
+    if (value === null || value === undefined) return ""
+
     switch (fieldType) {
-      case 'date':
-        return value instanceof Date ? format(value, 'PP') : value;
-      case 'checkbox':
-        return value ? <CheckCircle className="h-4 w-4 text-hospital-600" /> : '';
-      case 'number':
-        return Number(value).toString();
+      case "date":
+        return value instanceof Date ? format(value, "PP") : value
+      case "checkbox":
+        return value ? <CheckCircle className="h-4 w-4 text-hospital-600" /> : ""
+      case "number":
+        return Number(value).toString()
       default:
-        return value.toString();
+        return value.toString()
     }
-  };
-  
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
@@ -113,7 +145,7 @@ const RecordList: React.FC<RecordListProps> = ({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          
+
           <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
             <SelectTrigger className="w-full sm:w-60">
               <SelectValue placeholder="Filter by template" />
@@ -128,41 +160,30 @@ const RecordList: React.FC<RecordListProps> = ({
             </SelectContent>
           </Select>
         </div>
-        
-        {templates.length > 0 && (
-          <Button 
-            asChild
-            className="w-full sm:w-auto gap-2 bg-hospital-600 hover:bg-hospital-700"
-          >
-            <Link to="/templates">
-              <Plus className="h-4 w-4" />
-              Select Template
-            </Link>
-          </Button>
-        )}
       </div>
-      
+
       {templates.length === 0 ? (
         <Card className="animate-fade-in">
           <CardContent className="pt-6 pb-6 text-center">
             <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
             <CardTitle className="text-xl mb-2">No templates available</CardTitle>
-            <p className="text-muted-foreground mb-6">
-              Create a template before adding records
-            </p>
+            <p className="text-muted-foreground mb-6">Create a template before adding records</p>
             <Button asChild className="bg-hospital-600 hover:bg-hospital-700">
-              <Link to="/templates">Create Template</Link>
+              <Link href="/templates">Create Template</Link>
             </Button>
           </CardContent>
         </Card>
       ) : filteredRecords.length > 0 ? (
         <div className="space-y-6">
           {filteredRecords.map((record) => {
-            const template = getTemplateById(record.templateId);
-            if (!template) return null;
-            
+            const template = getTemplateById(record.templateId)
+            if (!template) return null
+
             return (
-              <Card key={record.id} className="animate-fade-in hover:shadow-glass-strong transition-shadow duration-300">
+              <Card
+                key={record.id}
+                className="animate-fade-in hover:shadow-glass-strong transition-shadow duration-300"
+              >
                 <CardHeader className="bg-hospital-50 border-b pb-4">
                   <div className="flex justify-between items-start">
                     <div>
@@ -174,25 +195,29 @@ const RecordList: React.FC<RecordListProps> = ({
                       </CardTitle>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Created on {format(new Date(record.createdAt), 'PPP')}
+                      Created on {format(new Date(record.createdAt), "PPP")}
                     </div>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="pt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {template.fields.map((field) => (
-                      <div key={field.id} className="space-y-1">
-                        <div className="text-sm font-medium">{field.name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {typeof formatFieldValue(record.values[field.id], field.type) === 'object' 
-                            ? formatFieldValue(record.values[field.id], field.type) 
-                            : formatFieldValue(record.values[field.id], field.type) || '—'}
+                    {template.fields.map((field) => {
+                      const fieldValue = getValueByFieldId(Array.isArray(record.values) ? record.values : [], field.id)
+
+                      return (
+                        <div key={field.id} className="space-y-1">
+                          <div className="text-sm font-medium">{field.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {typeof formatFieldValue(fieldValue, field.type) === "object"
+                              ? formatFieldValue(fieldValue, field.type)
+                              : formatFieldValue(fieldValue, field.type) || "—"}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
-                  
+
                   <div className="flex justify-end gap-2 mt-6">
                     <Button
                       size="sm"
@@ -215,7 +240,7 @@ const RecordList: React.FC<RecordListProps> = ({
                   </div>
                 </CardContent>
               </Card>
-            );
+            )
           })}
         </div>
       ) : (
@@ -226,8 +251,8 @@ const RecordList: React.FC<RecordListProps> = ({
               <Button
                 variant="link"
                 onClick={() => {
-                  setSearchQuery('');
-                  setSelectedTemplateId('all');
+                  setSearchQuery("")
+                  setSelectedTemplateId("all")
                 }}
                 className="mt-2"
               >
@@ -237,20 +262,14 @@ const RecordList: React.FC<RecordListProps> = ({
           ) : (
             <>
               <p className="text-muted-foreground">No records created yet</p>
-              <Button
-                variant="link"
-                asChild
-                className="mt-2"
-              >
-                <Link to="/templates">
-                  Select a template to create records
-                </Link>
+              <Button variant="link" asChild className="mt-2">
+                <Link href="/templates">Select a template to create records</Link>
               </Button>
             </>
           )}
         </div>
       )}
-      
+
       <Dialog open={!!editingRecord} onOpenChange={(open) => !open && setEditingRecord(null)}>
         <DialogContent className="max-w-4xl p-0">
           {editingRecord && (
@@ -263,14 +282,13 @@ const RecordList: React.FC<RecordListProps> = ({
           )}
         </DialogContent>
       </Dialog>
-      
+
       <AlertDialog open={!!deleteRecordId} onOpenChange={(open) => !open && setDeleteRecordId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the record
-              from the system.
+              This action cannot be undone. This will permanently delete the record from the system.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -282,7 +300,8 @@ const RecordList: React.FC<RecordListProps> = ({
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  );
-};
+  )
+}
 
-export default RecordList;
+export default RecordList
+
