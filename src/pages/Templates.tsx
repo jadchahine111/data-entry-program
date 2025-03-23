@@ -2,10 +2,6 @@
 import React from 'react';
 import Container from '@/components/layout/Container';
 import TemplateList from '@/components/templates/TemplateList';
-import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Template } from '@/components/templates/TemplateCard';
-import { Record } from '@/components/records/RecordForm';
-import { toast } from 'sonner';
 
 const Templates = () => {
 

@@ -5,9 +5,6 @@ import Container from '@/components/layout/Container';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, ListChecks, ArrowRight, TrendingUp, Users, Hospital, Badge } from 'lucide-react';
-import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Template } from '@/components/templates/TemplateCard';
-import { Record } from '@/components/records/RecordForm';
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
 

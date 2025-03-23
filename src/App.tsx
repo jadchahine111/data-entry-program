@@ -10,7 +10,6 @@ import NotFound from "./pages/NotFound";
 import Templates from "./pages/Templates";
 import Records from "./pages/Records";
 import Login from "./pages/Login";
-import TransitionComponent from "./components/ui/TransitionComponent";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +20,6 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <TransitionComponent>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/templates" element={<Templates />} />
@@ -30,7 +28,6 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </TransitionComponent>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
