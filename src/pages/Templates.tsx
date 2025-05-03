@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Container from '@/components/layout/Container';
-import TemplateList from '@/components/templates/TemplateList';
+import TemplateList from '@/components/template/TemplateList';
 
 const Templates = () => {
 

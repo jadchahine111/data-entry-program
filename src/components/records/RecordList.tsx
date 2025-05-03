@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import type { Template } from "@/components/templates/TemplateCard"
+import type { Template } from "@/components/template/TemplateCard"
 import type { Record } from "./RecordForm"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -61,7 +61,7 @@ const RecordList: React.FC<RecordListProps> = ({
   }
 
   // Helper function to get a value from the values array by field_id
-  const getValueByFieldId = (values: any[], fieldId: string): string => {
+  const getValueByFieldId = (values: ValueItem[], fieldId: string): unknown => {
     if (!Array.isArray(values)) return ""
 
     const valueItem = values.find((item) => item.field_id.toString() === fieldId)
@@ -91,7 +91,7 @@ const RecordList: React.FC<RecordListProps> = ({
 
     // Transform values from array to object if it's an array
     if (Array.isArray(recordCopy.values)) {
-      const valuesObject: { [key: string]: any } = {}
+      const valuesObject: { [key: string]: unknown } = {}
       recordCopy.values.forEach((item) => {
         valuesObject[item.field_id.toString()] = item.value
       })
@@ -117,18 +117,18 @@ const RecordList: React.FC<RecordListProps> = ({
     setEditingRecord(null)
   }
 
-  const formatFieldValue = (value: any, fieldType: string) => {
+  const formatFieldValue = (value: unknown, fieldType: string): React.ReactNode => {
     if (value === null || value === undefined) return ""
 
     switch (fieldType) {
       case "date":
-        return value instanceof Date ? format(value, "PP") : value
+        return value instanceof Date ? format(value, "PP") : String(value)
       case "checkbox":
         return value ? <CheckCircle className="h-4 w-4 text-hospital-600" /> : ""
       case "number":
         return Number(value).toString()
       default:
-        return value.toString()
+        return String(value)
     }
   }
 
@@ -206,9 +206,7 @@ const RecordList: React.FC<RecordListProps> = ({
                         <div key={field.id} className="space-y-1">
                           <div className="text-sm font-medium">{field.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {typeof formatFieldValue(fieldValue, field.type) === "object"
-                              ? formatFieldValue(fieldValue, field.type)
-                              : formatFieldValue(fieldValue, field.type) || "—"}
+                            {formatFieldValue(fieldValue, field.type) || "—"}
                           </div>
                         </div>
                       )
@@ -259,8 +257,9 @@ const RecordList: React.FC<RecordListProps> = ({
           ) : (
             <>
               <p className="text-muted-foreground">No records created yet</p>
-              <Button variant="link" asChild className="mt-2">
-                <Link href="/templates">Select a template to create records</Link>
+              {/* Using Button with a className instead of Link for compatibility */}
+              <Button variant="link" onClick={() => navigate("/templates")} className="mt-2">
+                Select a template to create records
               </Button>
             </>
           )}
@@ -301,4 +300,3 @@ const RecordList: React.FC<RecordListProps> = ({
 }
 
 export default RecordList
-

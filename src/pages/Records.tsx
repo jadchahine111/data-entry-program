@@ -3,18 +3,20 @@ import { useParams, useNavigate } from "react-router-dom"
 import Container from "@/components/layout/Container"
 import RecordList from "@/components/records/RecordList"
 import RecordForm from "@/components/records/RecordForm"
-import type { Template } from "@/components/templates/TemplateCard"
+import type { Template, Field, TemplateApiResponse as TemplateCardApiResponse } from "@/components/template/TemplateCard"
 import { toast } from "sonner"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import axios from "axios"
+import { api } from "@/contexts/AuthContext"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/contexts/AuthContext"
+import axios from "axios"
 
 // Define Record interface
 export interface Record {
   id: string
   templateId: string
-  values: { [key: string]: any }
+  values: { [key: string]: string | number | boolean | null }
   createdAt: string
 }
 
@@ -22,100 +24,118 @@ export interface Record {
 export interface RecordApiResponse {
   id: number
   template_id: number
-  values: { [key: string]: any }
+  values: { [key: string]: string | number | boolean | null }
   created_at: string
   updated_at: string
 }
 
 // API functions
 const fetchRecords = async (): Promise<Record[]> => {
-  const { data } = await axios.get<RecordApiResponse[]>("http://localhost:8000/api/records")
-  return data.map((record) => ({
-    id: record.id.toString(),
-    templateId: record.template_id.toString(),
-    values: record.values,
-    createdAt: record.created_at,
-  }))
+  try {
+    const { data } = await api.get<RecordApiResponse[]>("/records")
+    return data.map((record) => ({
+      id: record.id.toString(),
+      templateId: record.template_id.toString(),
+      values: record.values,
+      createdAt: record.created_at,
+    }))
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      throw error;
+    }
+    throw new Error('Failed to fetch records');
+  }
 }
 
 const fetchTemplates = async (): Promise<Template[]> => {
-  const { data } = await axios.get("http://localhost:8000/api/templates")
-  return data.map((template: any) => ({
-    id: template.id.toString(),
-    name: template.name,
-    description: template.description,
-    fields: Array.isArray(template.fields)
-      ? template.fields.map((field: any) => ({
-          id: field.id?.toString() || crypto.randomUUID(),
-          name: field.field_name,
-          type: field.field_type,
-          required: Boolean(field.is_required),
-          options: field.options,
-        }))
-      : [],
-    recordCount: template.records_count,
-    createdAt: template.created_at,
-  }))
+  try {
+    const { data } = await api.get<TemplateCardApiResponse[]>("/templates")
+    return data.map((template) => ({
+      id: template.id.toString(),
+      name: template.name,
+      description: template.description,
+      fields: template.fields?.map(field => ({
+        id: field.id?.toString() || crypto.randomUUID(),
+        name: field.field_name,
+        type: field.field_type as Field["type"],
+        required: Boolean(field.is_required),
+        options: field.options || []
+      })) || [],
+      recordCount: template.records_count,
+      createdAt: template.created_at
+    }))
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      throw error;
+    }
+    throw new Error('Failed to fetch templates');
+  }
 }
 
 const fetchTemplate = async (id: string): Promise<Template> => {
-  const { data } = await axios.get(`http://localhost:8000/api/templates/${id}`)
-  return {
-    id: data.id.toString(),
-    name: data.name,
-    description: data.description,
-    fields: Array.isArray(data.fields)
-      ? data.fields.map((field: any) => ({
-          id: field.id?.toString() || crypto.randomUUID(),
-          name: field.field_name,
-          type: field.field_type,
-          required: Boolean(field.is_required),
-          options: field.options,
-        }))
-      : [],
-    recordCount: data.records_count,
-    createdAt: data.created_at,
+  try {
+    const { data } = await api.get<TemplateCardApiResponse>(`/templates/${id}`)
+    return {
+      id: data.id.toString(),
+      name: data.name,
+      description: data.description,
+      fields: data.fields?.map(field => ({
+        id: field.id?.toString() || crypto.randomUUID(),
+        name: field.field_name,
+        type: field.field_type as Field["type"],
+        required: Boolean(field.is_required),
+        options: field.options || []
+      })) || [],
+      recordCount: data.records_count,
+      createdAt: data.created_at
+    }
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      throw error;
+    }
+    throw new Error('Failed to fetch template');
   }
 }
 
-const createRecord = async (record: Omit<Record, "id" | "createdAt">): Promise<void> => {
+const createRecord = async (record: Omit<Record, 'id' | 'createdAt'>): Promise<void> => {
   // Transform the record to match the API's expected format
   const fields = Object.entries(record.values).map(([fieldId, value]) => ({
-    field_id: Number.parseInt(fieldId),
-    value: value,
-  }))
+    field_id: parseInt(fieldId),
+    value: value
+  }));
 
   const apiRecord = {
-    template_id: Number.parseInt(record.templateId),
-    fields: fields,
-  }
+    template_id: parseInt(record.templateId),
+    fields: fields
+  };
 
-  await axios.post("http://localhost:8000/api/records", apiRecord)
-}
+  await api.post("/records", apiRecord);
+};
 
 const updateRecord = async (record: Record): Promise<void> => {
   // Transform the record to match the API's expected format
   const fields = Object.entries(record.values).map(([fieldId, value]) => ({
-    field_id: Number.parseInt(fieldId),
-    value: value,
-  }))
+    field_id: parseInt(fieldId),
+    value: value
+  }));
 
   const apiRecord = {
-    template_id: Number.parseInt(record.templateId),
-    fields: fields,
-  }
+    template_id: parseInt(record.templateId),
+    fields: fields
+  };
 
-  await axios.put(`http://localhost:8000/api/records/${record.id}`, apiRecord)
-}
+  await api.put(`/records/${record.id}`, apiRecord);
+};
 
 const deleteRecord = async (id: string): Promise<void> => {
-  await axios.delete(`http://localhost:8000/api/records/${id}`)
+  await api.delete(`/records/${id}`)
 }
 
 const Records = () => {
   const params = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { isLoading: isAuthLoading } = useAuth()
 
   const templateId = params.templateId
 
@@ -127,6 +147,13 @@ const Records = () => {
   } = useQuery({
     queryKey: ["records"],
     queryFn: fetchRecords,
+    retry: (failureCount, error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    enabled: !isAuthLoading
   })
 
   // Fetch templates
@@ -137,6 +164,13 @@ const Records = () => {
   } = useQuery({
     queryKey: ["templates"],
     queryFn: fetchTemplates,
+    retry: (failureCount, error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    enabled: !isAuthLoading
   })
 
   // Fetch specific template if templateId is provided
@@ -147,7 +181,13 @@ const Records = () => {
   } = useQuery({
     queryKey: ["template", templateId],
     queryFn: () => fetchTemplate(templateId!),
-    enabled: !!templateId,
+    enabled: !!templateId && !isAuthLoading,
+    retry: (failureCount, error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        return false;
+      }
+      return failureCount < 3;
+    }
   })
 
   // Create record mutation
@@ -200,7 +240,7 @@ const Records = () => {
   }
 
   // Handle loading state for the main data
-  if (isLoadingRecords || isLoadingTemplates) {
+  if (isAuthLoading || isLoadingRecords || isLoadingTemplates) {
     return (
       <Container>
         <div className="flex justify-center items-center h-64">

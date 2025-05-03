@@ -23,7 +23,7 @@ export interface Template {
   description: string
   fields: Field[]
   recordCount: number
-  createdAt: string
+  createdAt: string,
 }
 
 // API response interface
@@ -55,7 +55,7 @@ export const mapApiToTemplate = (data: TemplateApiResponse): Template => ({
         name: field.field_name,
         type: field.field_type as 'text' | 'number' | 'date' | 'select' | 'checkbox',
         required: Boolean(field.is_required), // Convert to boolean to handle 0/1 values
-        options: field.options
+        options: field.options,
       }))
     : [],
   recordCount: data.records_count,

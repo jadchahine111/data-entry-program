@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import type { Template, Field } from "@/components/templates/TemplateCard"
+import type { Template, Field } from "@/components/template/TemplateCard"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,7 +15,7 @@ import { Check, Loader2, X } from "lucide-react"
 export interface Record {
   id: string
   templateId: string
-  values: { [key: string]: any }
+  values: { [key: string]: unknown }
   createdAt: string
 }
 
@@ -28,11 +28,11 @@ interface RecordFormProps {
 }
 
 const RecordForm: React.FC<RecordFormProps> = ({ template, initialData, onSubmit, onCancel, isSubmitting = false }) => {
-  const [values, setValues] = useState<{ [key: string]: any }>(initialData?.values || {})
+  const [values, setValues] = useState<{ [key: string]: unknown }>(initialData?.values || {})
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
-  const handleChange = (fieldId: string, value: any) => {
+  const handleChange = (fieldId: string, value: unknown) => {
     setValues({
       ...values,
       [fieldId]: value,
@@ -90,7 +90,7 @@ const RecordForm: React.FC<RecordFormProps> = ({ template, initialData, onSubmit
         return (
           <Input
             id={field.id}
-            value={values[field.id] || ""}
+            value={values[field.id] as string || ""}
             onChange={(e) => handleChange(field.id, e.target.value)}
             className={errors[field.id] ? "border-red-500" : ""}
           />
@@ -100,7 +100,7 @@ const RecordForm: React.FC<RecordFormProps> = ({ template, initialData, onSubmit
           <Input
             id={field.id}
             type="number"
-            value={values[field.id] || ""}
+            value={values[field.id] as string || ""}
             onChange={(e) => handleChange(field.id, e.target.value ? Number(e.target.value) : "")}
             className={errors[field.id] ? "border-red-500" : ""}
           />
@@ -110,14 +110,14 @@ const RecordForm: React.FC<RecordFormProps> = ({ template, initialData, onSubmit
           <Input
             id={field.id}
             type="date"
-            value={values[field.id] || ""}
+            value={values[field.id] as string || ""}
             onChange={(e) => handleChange(field.id, e.target.value)}
             className={errors[field.id] ? "border-red-500" : ""}
           />
         )
       case "select":
         return (
-          <Select value={values[field.id] || ""} onValueChange={(value) => handleChange(field.id, value)}>
+          <Select value={values[field.id] as string || ""} onValueChange={(value) => handleChange(field.id, value)}>
             <SelectTrigger className={errors[field.id] ? "border-red-500" : ""}>
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
@@ -135,7 +135,7 @@ const RecordForm: React.FC<RecordFormProps> = ({ template, initialData, onSubmit
           <div className="flex items-center space-x-2">
             <Checkbox
               id={field.id}
-              checked={values[field.id] || false}
+              checked={values[field.id] as boolean || false}
               onCheckedChange={(checked) => handleChange(field.id, checked)}
             />
             <label
