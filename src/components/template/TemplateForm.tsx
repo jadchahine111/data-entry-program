@@ -10,7 +10,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import type { Field, Template } from "./TemplateCard"
+import type { Field, Template, FieldOption } from "./TemplateCard"
 import { Badge } from "@/components/ui/badge"
 import { Plus, X, Check, AlertCircle, Grip, Loader2 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -48,8 +48,10 @@ const fieldTypeOptions = [
   { value: "text", label: "Text" },
   { value: "number", label: "Number" },
   { value: "date", label: "Date" },
-  { value: "select", label: "Select" },
+  { value: "select", label: "Select (Dropdown)" },
+  { value: "radio", label: "Radio Buttons" },
   { value: "checkbox", label: "Checkbox" },
+  { value: "boolean", label: "Boolean (Yes/No)" },
 ]
 
 interface TemplateFormProps {
@@ -70,7 +72,8 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
     options: [],
   })
 
-  const [currentOption, setCurrentOption] = useState("")
+  const [currentOptionName, setCurrentOptionName] = useState("")
+  const [currentOptionValue, setCurrentOptionValue] = useState("")
   const isEditMode = !!initialData
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -107,8 +110,9 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
       return
     }
 
-    if (currentField.type === "select" && (!currentField.options || currentField.options.length === 0)) {
-      toast.error("Select fields require at least one option")
+    if ((currentField.type === "select" || currentField.type === "radio") && 
+        (!currentField.options || currentField.options.length < 2)) {
+      toast.error(`${currentField.type === "select" ? "Select" : "Radio"} fields require at least two options`)
       return
     }
 
@@ -127,21 +131,41 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
   }
 
   const addOption = () => {
-    if (!currentOption) return
+    if (!currentOptionName || !currentOptionValue) {
+      toast.error("Both option name and value are required")
+      return
+    }
+
+    const newOption: FieldOption = {
+      option_name: currentOptionName,
+      option_value: currentOptionValue,
+      display_order: (currentField.options?.length || 0) + 1
+    }
 
     setCurrentField({
       ...currentField,
-      options: [...(currentField.options || []), currentOption],
+      options: [...(currentField.options || []), newOption],
     })
 
-    setCurrentOption("")
+    setCurrentOptionName("")
+    setCurrentOptionValue("")
   }
 
-  const removeOption = (option: string) => {
-    setCurrentField({
-      ...currentField,
-      options: currentField.options?.filter((o) => o !== option),
-    })
+  const removeOption = (optionValue: string) => {
+    if (Array.isArray(currentField.options)) {
+      const filteredOptions = currentField.options.filter(opt => {
+        if (typeof opt === 'string') {
+          return opt !== optionValue
+        } else {
+          return opt.option_value !== optionValue
+        }
+      })
+      
+      setCurrentField({
+        ...currentField,
+        options: filteredOptions,
+      })
+    }
   }
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
@@ -150,11 +174,34 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
       return
     }
 
+    // Transform all string options to FieldOption format before saving
+    const formattedFields = fields.map(field => {
+      if (field.options && Array.isArray(field.options)) {
+        // Convert any string options to FieldOption format
+        const formattedOptions = field.options.map((opt, index) => {
+          if (typeof opt === 'string') {
+            return {
+              option_name: opt,
+              option_value: opt.toLowerCase().replace(/\s+/g, '_'),
+              display_order: index + 1
+            }
+          }
+          return opt
+        })
+        
+        return {
+          ...field,
+          options: formattedOptions
+        }
+      }
+      return field
+    })
+
     const templateData: Template = {
       id: initialData?.id || uuidv4(),
       name: values.name,
       description: values.description,
-      fields,
+      fields: formattedFields,
       recordCount: initialData?.recordCount || 0,
       createdAt: initialData?.createdAt || new Date().toISOString(),
     }
@@ -168,6 +215,13 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
     const style = {
       transform: CSS.Transform.toString(transform),
       transition,
+    }
+
+    // Helper function to get option count display text
+    const getOptionsText = () => {
+      if (!field.options || field.options.length === 0) return '';
+      
+      return `${field.options.length} options`;
     }
 
     return (
@@ -191,8 +245,8 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
                 {field.type}
               </Badge>
 
-              {field.options && field.options.length > 0 && (
-                <span className="text-[10px]">{field.options.length} options</span>
+              {(field.type === 'select' || field.type === 'radio') && field.options && field.options.length > 0 && (
+                <span className="text-[10px]">{getOptionsText()}</span>
               )}
             </div>
           </div>
@@ -308,7 +362,8 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
                         setCurrentField({
                           ...currentField,
                           type: value as Field["type"],
-                          options: value === "select" ? [] : undefined,
+                          // Reset options when changing field type
+                          options: value === "select" || value === "radio" ? [] : undefined,
                         })
                       }}
                     >
@@ -337,47 +392,66 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
                   </FormLabel>
                 </div>
 
-                {currentField.type === "select" && (
+                {(currentField.type === "select" || currentField.type === "radio") && (
                   <div className="mb-4 border rounded-md p-3 bg-white">
-                    <FormLabel className="text-sm">Options</FormLabel>
+                    <FormLabel className="text-sm">
+                      {currentField.type === "select" ? "Dropdown Options" : "Radio Button Options"}
+                    </FormLabel>
 
-                    <div className="flex gap-2 mb-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
                       <Input
-                        placeholder="Add option"
-                        value={currentOption}
-                        onChange={(e) => setCurrentOption(e.target.value)}
-                        className="flex-1"
+                        placeholder="Option Name (Display Text)"
+                        value={currentOptionName}
+                        onChange={(e) => setCurrentOptionName(e.target.value)}
                       />
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={addOption}
-                        className="bg-hospital-600 hover:bg-hospital-700"
-                        disabled={!currentOption}
-                      >
-                        Add
-                      </Button>
+                      <Input
+                        placeholder="Option Value (Stored Value)"
+                        value={currentOptionValue}
+                        onChange={(e) => setCurrentOptionValue(e.target.value)}
+                      />
                     </div>
+                    
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={addOption}
+                      className="bg-hospital-600 hover:bg-hospital-700 mt-2"
+                      disabled={!currentOptionName || !currentOptionValue}
+                    >
+                      Add Option
+                    </Button>
 
                     {currentField.options && currentField.options.length > 0 ? (
                       <div className="flex flex-wrap gap-2 mt-3">
-                        {currentField.options.map((option) => (
-                          <Badge key={option} variant="secondary" className="gap-1 pr-1">
-                            {option}
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-4 w-4 p-0 ml-1 text-muted-foreground hover:text-foreground"
-                              onClick={() => removeOption(option)}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </Badge>
-                        ))}
+                        {currentField.options.map((option, index) => {
+                          const displayText = typeof option === 'string' 
+                            ? option 
+                            : `${option.option_name} (${option.option_value})`;
+                          
+                          const optionValue = typeof option === 'string' 
+                            ? option 
+                            : option.option_value;
+                            
+                          return (
+                            <Badge key={index} variant="secondary" className="gap-1 pr-1">
+                              {displayText}
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-4 w-4 p-0 ml-1 text-muted-foreground hover:text-foreground"
+                                onClick={() => removeOption(optionValue)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </Badge>
+                          );
+                        })}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground mt-2">No options added</p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        No options added yet. Add at least two options.
+                      </p>
                     )}
                   </div>
                 )}

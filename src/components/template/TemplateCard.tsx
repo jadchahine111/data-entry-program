@@ -9,12 +9,18 @@ import { Link } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { formatDistanceToNow } from "date-fns"
 
+export interface FieldOption {
+  option_name: string;
+  option_value: string;
+  display_order: number | boolean;
+}
+
 export interface Field {
   id: string
   name: string
-  type: "text" | "number" | "date" | "select" | "checkbox"
+  type: "text" | "number" | "date" | "select" | "checkbox" | "radio" | "boolean"
   required: boolean
-  options?: string[] // For select fields
+  options?: Array<string | FieldOption> // For select and radio fields
 }
 
 export interface Template {
@@ -53,7 +59,7 @@ export const mapApiToTemplate = (data: TemplateApiResponse): Template => ({
     ? data.fields.map(field => ({
         id: field.id?.toString() || crypto.randomUUID(),
         name: field.field_name,
-        type: field.field_type as 'text' | 'number' | 'date' | 'select' | 'checkbox',
+        type: field.field_type as 'text' | 'number' | 'date' | 'select' | 'checkbox' | 'radio' | 'boolean',
         required: Boolean(field.is_required), // Convert to boolean to handle 0/1 values
         options: field.options,
       }))

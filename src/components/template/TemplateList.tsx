@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState } from "react"
-import TemplateCard, { type Template, type TemplateApiResponse, mapApiToTemplate } from "./TemplateCard"
+import TemplateCard, { type Template, type TemplateApiResponse, type FieldOption, mapApiToTemplate } from "./TemplateCard"
 import { Button } from "@/components/ui/button"
 import { Plus, Search, Loader2 } from 'lucide-react'
 import { Input } from "@/components/ui/input"
@@ -21,11 +21,12 @@ import {
 import { toast } from "sonner"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { api } from "@/contexts/AuthContext"
+import axios from "axios"
 import { v4 as uuidv4 } from 'uuid';
-import { useAuth } from "@/contexts/AuthContext";
-import axios from "axios";
+import { useAuth } from "@/contexts/AuthContext"
 
 // API functions
+// Update the fetchTemplates function to properly map the API response
 const fetchTemplates = async (): Promise<Template[]> => {
   try {
     const { data } = await api.get<TemplateApiResponse[]>('/templates');
@@ -44,13 +45,40 @@ const createTemplate = async (template: Omit<Template, 'id' | 'recordCount' | 'c
   const apiTemplate = {
     name: template.name,
     description: template.description,
-    fields: template.fields.map((field, index) => ({
-      field_name: field.name,
-      field_type: field.type,
-      is_required: field.required ? 1 : 0, // Convert boolean to 0/1 for API
-      display_order: index + 1,
-      options: field.options // Include options if available
-    }))
+    fields: template.fields.map((field, index) => {
+      const fieldData = {
+        field_name: field.name,
+        field_type: field.type,
+        is_required: field.required ? 1 : 0, // Convert boolean to 0/1 for API
+        display_order: index + 1
+      };
+
+      // Add options if they exist
+      if (field.options && field.options.length > 0) {
+        const options = field.options.map((option, optIndex) => {
+          if (typeof option === 'string') {
+            return {
+              option_name: option,
+              option_value: option.toLowerCase().replace(/\s+/g, '_'),
+              display_order: optIndex + 1
+            };
+          } else {
+            return {
+              option_name: option.option_name,
+              option_value: option.option_value,
+              display_order: typeof option.display_order === 'boolean' ? 1 : option.display_order
+            };
+          }
+        });
+        
+        return {
+          ...fieldData,
+          options: options
+        };
+      }
+      
+      return fieldData;
+    })
   };
   
   await api.post('/templates', apiTemplate);
@@ -62,18 +90,43 @@ const updateTemplate = async (template: Template): Promise<void> => {
   const apiTemplate = {
     name: template.name,
     description: template.description,
-    fields: template.fields.map((field, index) => ({
-      field_name: field.name,
-      field_type: field.type,
-      is_required: field.required ? 1 : 0, // Convert boolean to 0/1 for API
-      display_order: index + 1,
-      options: field.options // Include options if available
-    }))
+    fields: template.fields.map((field, index) => {
+      const fieldData = {
+        field_name: field.name,
+        field_type: field.type,
+        is_required: field.required ? 1 : 0, // Convert boolean to 0/1 for API
+        display_order: index + 1
+      };
+
+      // Add options if they exist
+      if (field.options && field.options.length > 0) {
+        const options = field.options.map((option, optIndex) => {
+          if (typeof option === 'string') {
+            return {
+              option_name: option,
+              option_value: option.toLowerCase().replace(/\s+/g, '_'),
+              display_order: optIndex + 1
+            };
+          } else {
+            return {
+              option_name: option.option_name,
+              option_value: option.option_value,
+              display_order: typeof option.display_order === 'boolean' ? 1 : option.display_order
+            };
+          }
+        });
+        
+        return {
+          ...fieldData,
+          options: options
+        };
+      }
+      
+      return fieldData;
+    })
   };
   
   await api.put(`/templates/${template.id}`, apiTemplate);
-  // The API returns a status message, not the updated template
-  // We'll rely on refetching the templates after update
 };
 
 const deleteTemplate = async (id: string): Promise<void> => {
