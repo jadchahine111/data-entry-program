@@ -2,13 +2,15 @@
 
 import type React from "react"
 import { useState } from "react"
-import type { Template, Field } from "@/components/template/TemplateCard"
+import type { Template, Field, FieldOption } from "@/components/template/TemplateCard"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Switch } from "@/components/ui/switch"
 import { v4 as uuidv4 } from "uuid"
 import { Check, Loader2, X } from "lucide-react"
 
@@ -29,7 +31,6 @@ interface RecordFormProps {
 
 const RecordForm: React.FC<RecordFormProps> = ({ template, initialData, onSubmit, onCancel, isSubmitting = false }) => {
   const [values, setValues] = useState<{ [key: string]: unknown }>(initialData?.values || {})
-
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
   const handleChange = (fieldId: string, value: unknown) => {
@@ -84,6 +85,20 @@ const RecordForm: React.FC<RecordFormProps> = ({ template, initialData, onSubmit
     onSubmit(record)
   }
 
+  // Helper function to handle option display and values 
+  const getOptionData = (option: string | FieldOption) => {
+    if (typeof option === 'string') {
+      return {
+        label: option,
+        value: option
+      };
+    }
+    return {
+      label: option.option_name,
+      value: option.option_value
+    };
+  };
+
   const renderField = (field: Field) => {
     switch (field.type) {
       case "text":
@@ -117,18 +132,41 @@ const RecordForm: React.FC<RecordFormProps> = ({ template, initialData, onSubmit
         )
       case "select":
         return (
-          <Select value={values[field.id] as string || ""} onValueChange={(value) => handleChange(field.id, value)}>
+          <Select 
+            value={values[field.id] as string || ""} 
+            onValueChange={(value) => handleChange(field.id, value)}
+          >
             <SelectTrigger className={errors[field.id] ? "border-red-500" : ""}>
               <SelectValue placeholder="Select an option" />
             </SelectTrigger>
             <SelectContent>
-              {field.options?.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {option}
-                </SelectItem>
-              ))}
+              {field.options?.map((option, index) => {
+                const { label, value } = getOptionData(option);
+                return (
+                  <SelectItem key={`${value}-${index}`} value={value}>
+                    {label}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
+        )
+      case "radio":
+        return (
+          <RadioGroup 
+            value={values[field.id] as string || ""} 
+            onValueChange={(value) => handleChange(field.id, value)}
+          >
+            {field.options?.map((option, index) => {
+              const { label, value } = getOptionData(option);
+              return (
+                <div key={`${value}-${index}`} className="flex items-center space-x-2">
+                  <RadioGroupItem value={value} id={`${field.id}-${value}`} />
+                  <Label htmlFor={`${field.id}-${value}`}>{label}</Label>
+                </div>
+              );
+            })}
+          </RadioGroup>
         )
       case "checkbox":
         return (
@@ -144,6 +182,19 @@ const RecordForm: React.FC<RecordFormProps> = ({ template, initialData, onSubmit
             >
               Yes
             </label>
+          </div>
+        )
+      case "boolean":
+        return (
+          <div className="flex items-center space-x-2">
+            <Switch
+              id={field.id}
+              checked={values[field.id] as boolean || false}
+              onCheckedChange={(checked) => handleChange(field.id, checked)}
+            />
+            <Label htmlFor={field.id}>
+              {values[field.id] ? "Yes" : "No"}
+            </Label>
           </div>
         )
       default:

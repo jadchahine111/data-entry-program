@@ -59,13 +59,15 @@ const createTemplate = async (template: Omit<Template, 'id' | 'recordCount' | 'c
           if (typeof option === 'string') {
             return {
               option_name: option,
-              option_value: option.toLowerCase().replace(/\s+/g, '_'),
+              option_value: option.toLowerCase().replace(/\s+/g, '_') + '-' + optIndex,
               display_order: optIndex + 1
             };
           } else {
+            // Ensure each option has a unique value
+            const value = option.option_value || `${option.option_name.toLowerCase().replace(/\s+/g, '_')}-${optIndex}`;
             return {
               option_name: option.option_name,
-              option_value: option.option_value,
+              option_value: value,
               display_order: typeof option.display_order === 'boolean' ? 1 : option.display_order
             };
           }
@@ -104,13 +106,15 @@ const updateTemplate = async (template: Template): Promise<void> => {
           if (typeof option === 'string') {
             return {
               option_name: option,
-              option_value: option.toLowerCase().replace(/\s+/g, '_'),
+              option_value: option.toLowerCase().replace(/\s+/g, '_') + '-' + optIndex,
               display_order: optIndex + 1
             };
           } else {
+            // Ensure each option has a unique value
+            const value = option.option_value || `${option.option_name.toLowerCase().replace(/\s+/g, '_')}-${optIndex}`;
             return {
               option_name: option.option_name,
-              option_value: option.option_value,
+              option_value: value,
               display_order: typeof option.display_order === 'boolean' ? 1 : option.display_order
             };
           }

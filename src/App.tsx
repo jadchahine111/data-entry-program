@@ -19,14 +19,14 @@ const App = () => (
       <AuthProvider>
         <BrowserRouter>
           <AuthRedirect />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/templates" element={<Templates />} />
-            <Route path="/records" element={<Records />} />
-            <Route path="/records/new/:templateId" element={<Records />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/templates" element={<Templates />} />
+              <Route path="/records" element={<Records />} />
+              <Route path="/records/new/:templateId" element={<Records />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
         </BrowserRouter>
         <Toaster />
         <Sonner />

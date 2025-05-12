@@ -56,13 +56,25 @@ export const mapApiToTemplate = (data: TemplateApiResponse): Template => ({
   name: data.name,
   description: data.description,
   fields: Array.isArray(data.fields) 
-    ? data.fields.map(field => ({
-        id: field.id?.toString() || crypto.randomUUID(),
-        name: field.field_name,
-        type: field.field_type as 'text' | 'number' | 'date' | 'select' | 'checkbox' | 'radio' | 'boolean',
-        required: Boolean(field.is_required), // Convert to boolean to handle 0/1 values
-        options: field.options,
-      }))
+    ? data.fields.map(field => {
+        // Process options to ensure they have unique values if they exist
+        let processedOptions;
+        if (field.options && field.options.length > 0) {
+          processedOptions = field.options.map((opt, index) => ({
+            option_name: opt,
+            option_value: `${opt.toLowerCase().replace(/\s+/g, '_')}-${index}`,
+            display_order: index + 1
+          }));
+        }
+        
+        return {
+          id: field.id?.toString() || crypto.randomUUID(),
+          name: field.field_name,
+          type: field.field_type as 'text' | 'number' | 'date' | 'select' | 'checkbox' | 'radio' | 'boolean',
+          required: Boolean(field.is_required), // Convert to boolean to handle 0/1 values
+          options: processedOptions || field.options,
+        }
+      })
     : [],
   recordCount: data.records_count,
   createdAt: data.created_at,

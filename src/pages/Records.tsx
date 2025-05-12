@@ -33,12 +33,12 @@ export interface RecordApiResponse {
 const fetchRecords = async (): Promise<Record[]> => {
   try {
     const { data } = await api.get<RecordApiResponse[]>("/records")
-    return data.map((record) => ({
-      id: record.id.toString(),
-      templateId: record.template_id.toString(),
-      values: record.values,
-      createdAt: record.created_at,
-    }))
+  return data.map((record) => ({
+    id: record.id.toString(),
+    templateId: record.template_id.toString(),
+    values: record.values,
+    createdAt: record.created_at,
+  }))
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       throw error;
@@ -51,19 +51,19 @@ const fetchTemplates = async (): Promise<Template[]> => {
   try {
     const { data } = await api.get<TemplateCardApiResponse[]>("/templates")
     return data.map((template) => ({
-      id: template.id.toString(),
-      name: template.name,
-      description: template.description,
+    id: template.id.toString(),
+    name: template.name,
+    description: template.description,
       fields: template.fields?.map(field => ({
-        id: field.id?.toString() || crypto.randomUUID(),
-        name: field.field_name,
+          id: field.id?.toString() || crypto.randomUUID(),
+          name: field.field_name,
         type: field.field_type as Field["type"],
-        required: Boolean(field.is_required),
+          required: Boolean(field.is_required),
         options: field.options || []
       })) || [],
-      recordCount: template.records_count,
+    recordCount: template.records_count,
       createdAt: template.created_at
-    }))
+  }))
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       throw error;
@@ -75,18 +75,18 @@ const fetchTemplates = async (): Promise<Template[]> => {
 const fetchTemplate = async (id: string): Promise<Template> => {
   try {
     const { data } = await api.get<TemplateCardApiResponse>(`/templates/${id}`)
-    return {
-      id: data.id.toString(),
-      name: data.name,
-      description: data.description,
+  return {
+    id: data.id.toString(),
+    name: data.name,
+    description: data.description,
       fields: data.fields?.map(field => ({
-        id: field.id?.toString() || crypto.randomUUID(),
-        name: field.field_name,
+          id: field.id?.toString() || crypto.randomUUID(),
+          name: field.field_name,
         type: field.field_type as Field["type"],
-        required: Boolean(field.is_required),
+          required: Boolean(field.is_required),
         options: field.options || []
       })) || [],
-      recordCount: data.records_count,
+    recordCount: data.records_count,
       createdAt: data.created_at
     }
   } catch (error) {

@@ -136,6 +136,18 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
       return
     }
 
+    // Check if option with same value already exists
+    if (Array.isArray(currentField.options) && currentField.options.some(opt => {
+      if (typeof opt === 'string') {
+        return opt === currentOptionValue;
+      } else {
+        return opt.option_value === currentOptionValue;
+      }
+    })) {
+      toast.error("An option with this value already exists");
+      return;
+    }
+
     const newOption: FieldOption = {
       option_name: currentOptionName,
       option_value: currentOptionValue,
@@ -182,11 +194,16 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
           if (typeof opt === 'string') {
             return {
               option_name: opt,
-              option_value: opt.toLowerCase().replace(/\s+/g, '_'),
+              option_value: opt.toLowerCase().replace(/\s+/g, '_') + '-' + index,
               display_order: index + 1
             }
           }
-          return opt
+          // Ensure option_value is unique
+          const optionValue = typeof opt.option_value === 'string' ? opt.option_value : `${opt.option_name}-${index}`;
+          return {
+            ...opt,
+            option_value: optionValue
+          }
         })
         
         return {
@@ -433,7 +450,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
                             : option.option_value;
                             
                           return (
-                            <Badge key={index} variant="secondary" className="gap-1 pr-1">
+                            <Badge key={`option-${index}-${optionValue}`} variant="secondary" className="gap-1 pr-1">
                               {displayText}
                               <Button
                                 type="button"
