@@ -173,10 +173,10 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
         }
       })
       
-      setCurrentField({
-        ...currentField,
+    setCurrentField({
+      ...currentField,
         options: filteredOptions,
-      })
+    })
     }
   }
 
@@ -428,15 +428,15 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
                       />
                     </div>
                     
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={addOption}
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={addOption}
                       className="bg-hospital-600 hover:bg-hospital-700 mt-2"
                       disabled={!currentOptionName || !currentOptionValue}
-                    >
+                      >
                       Add Option
-                    </Button>
+                      </Button>
 
                     {currentField.options && currentField.options.length > 0 ? (
                       <div className="flex flex-wrap gap-2 mt-3">
@@ -452,16 +452,16 @@ const TemplateForm: React.FC<TemplateFormProps> = ({ initialData, onSubmit, onCa
                           return (
                             <Badge key={`option-${index}-${optionValue}`} variant="secondary" className="gap-1 pr-1">
                               {displayText}
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="h-4 w-4 p-0 ml-1 text-muted-foreground hover:text-foreground"
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-4 w-4 p-0 ml-1 text-muted-foreground hover:text-foreground"
                                 onClick={() => removeOption(optionValue)}
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </Badge>
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </Badge>
                           );
                         })}
                       </div>

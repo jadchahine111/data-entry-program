@@ -68,10 +68,10 @@ export const mapApiToTemplate = (data: TemplateApiResponse): Template => ({
         }
         
         return {
-          id: field.id?.toString() || crypto.randomUUID(),
-          name: field.field_name,
+        id: field.id?.toString() || crypto.randomUUID(),
+        name: field.field_name,
           type: field.field_type as 'text' | 'number' | 'date' | 'select' | 'checkbox' | 'radio' | 'boolean',
-          required: Boolean(field.is_required), // Convert to boolean to handle 0/1 values
+        required: Boolean(field.is_required), // Convert to boolean to handle 0/1 values
           options: processedOptions || field.options,
         }
       })

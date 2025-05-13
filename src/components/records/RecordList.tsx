@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import { Trash2, Search, FileText, Link, Pencil, CheckCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import RecordForm from "./RecordForm"
 import {
   AlertDialog,
@@ -268,6 +268,12 @@ const RecordList: React.FC<RecordListProps> = ({
 
       <Dialog open={!!editingRecord} onOpenChange={(open) => !open && setEditingRecord(null)}>
         <DialogContent className="max-w-4xl p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Edit Record</DialogTitle>
+            <DialogDescription>
+              Update the information in this record.
+            </DialogDescription>
+          </DialogHeader>
           {editingRecord && (
             <RecordForm
               template={getTemplateById(editingRecord.templateId)!}

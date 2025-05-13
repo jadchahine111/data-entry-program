@@ -6,7 +6,7 @@ import TemplateCard, { type Template, type TemplateApiResponse, type FieldOption
 import { Button } from "@/components/ui/button"
 import { Plus, Search, Loader2 } from 'lucide-react'
 import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import TemplateForm from "./TemplateForm"
 import {
   AlertDialog,
@@ -321,6 +321,12 @@ const TemplateList: React.FC = () => {
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-w-4xl p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Create New Template</DialogTitle>
+            <DialogDescription>
+              Create a template with custom fields to collect and organize your data.
+            </DialogDescription>
+          </DialogHeader>
           <TemplateForm
             onSubmit={handleSubmitTemplate}
             onCancel={handleCancelForm}
@@ -331,6 +337,12 @@ const TemplateList: React.FC = () => {
 
       <Dialog open={!!editingTemplate} onOpenChange={(open) => !open && setEditingTemplate(null)}>
         <DialogContent className="max-w-4xl p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Edit Template</DialogTitle>
+            <DialogDescription>
+              Modify your template's fields and properties.
+            </DialogDescription>
+          </DialogHeader>
           {editingTemplate && (
             <TemplateForm
               initialData={editingTemplate}

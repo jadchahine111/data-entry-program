@@ -145,7 +145,7 @@ const RecordForm: React.FC<RecordFormProps> = ({ template, initialData, onSubmit
                 return (
                   <SelectItem key={`${value}-${index}`} value={value}>
                     {label}
-                  </SelectItem>
+                </SelectItem>
                 );
               })}
             </SelectContent>

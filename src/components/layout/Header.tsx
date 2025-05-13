@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { LayoutGrid, FileText, ListChecks, LogIn, LogOut, Menu } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 
 const Header = () => {
   const location = useLocation()
@@ -91,6 +91,12 @@ const Header = () => {
               </Button>
             </SheetTrigger>
             <SheetContent side="right" className="w-[250px] sm:w-[300px]">
+              <SheetHeader>
+                <SheetTitle className="sr-only">Menu</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Navigation options for MediForm application.
+                </SheetDescription>
+              </SheetHeader>
               <div className="flex flex-col h-full">
                 <div className="flex items-center py-4">
                   <span className="text-hospital-600 font-semibold text-lg">MediForm</span>
